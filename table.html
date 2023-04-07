@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerability database</title> 
+</head>
+   
+<style>
+
+    table,
+
+    th, td {
+        border: 1.5px solid black;
+    }
+</style>
+
+
+<body>
+        <h1>Vulnerability Cloud Database</h1> 
+        <input type="text" id="cveID" name="cve_ID" placeholder="CVE-..."/>
+        <input type="text" id="vulnName" name="vulnerability_Name" placeholder="Vulnerability Name" />
+        <input type="emai" id="shortDescription" name="short_description" placeholder="Description" /> 
+        <button id="submit" type="submit">Submit</button>
+
+        <hr />
+        <br />
+        <button id="getData" type="submit">Get data</button>
+        <hr/>
+        <table id="dataTable">
+            <tr>
+                <th>CVEID</th> 
+                <th>Vulnerability Name</th>
+                <th>Short Description</th> 
+            </tr>
+            <tr>
+                <td>Example: CVE-2021-27104</td>
+                <td>Example: Accellion FTA OS Command Injection Vulnerability</td>      
+                <td>Example: Accellion FTA 9_12_370 and earlier is affected by OS command execution via a crafted POST request to various admin endpoints</td>
+            </tr>
+           
+        </table>       
+    </body>
+</html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js";
+    import { getDatabase, ref, set, push, child, onValue} from "https://www.gstatic.com/firebasejs/9.19.1/firebase-database.js";
+
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+  
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBUirNNnrHgP8xBMUwzonSEvoHgPmQOEbc",
+      authDomain: "fir-vuln-catalog.firebaseapp.com",
+      databaseURL: "https://fir-vuln-catalog-default-rtdb.firebaseio.com",
+      projectId: "fir-vuln-catalog",
+      storageBucket: "fir-vuln-catalog.appspot.com",
+      messagingSenderId: "458817013297",
+      appId: "1:458817013297:web:37f2306ad6724c2da9f710"
+    };
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    submit.addEventListener('click',(e) =>{ //This is the submit button//
+
+        const userId = push(child(ref(database), 'users/')).key;
+
+        set(ref(database, 'users/' + userId), {
+            cve_ID: document.getElementById('cveID').value, //este (lastName) se puede cambiar y cambia tambien input en linea 23-26
+            vulnerability_Name: document.getElementById('vulnName').value,                                    //ojo que estos nombres deben match con los nombres en: lineas 28 y 29
+            short_description : document.getElementById('shortDescription').value,
+
+        }).then(() => {
+            // Data saved successfully!
+            alert('Data submitted!');
+            })
+            .catch((error) => {
+            // The write failed...
+            alert(error);
+            });;
+   });
+   getData.addEventListener('click',(e) =>{ 
+    
+    $("#dataTable td").remove();
+
+    const dbRef = ref(database, "users/");
+    
+    onValue(
+        dbRef,
+        (snapshot) => {
+            snapshot.forEach((childSnapshot) => {
+                const childKey = childSnapshot.key;
+                const childData = childSnapshot.val();
+                // ...
+                // rowNum += 1;
+                var row = 
+                    "<tr><td>" +
+                    childData.cve_ID +
+                    "</td><td>"+
+                    childData.vulnerability_Name +
+                    "</td><td>"+
+                    childData.short_description +
+                    "</td><td>";
+                $(row).appendTo("#dataTable");
+            });
+        },
+        {
+        onlyOnce: true
+        }
+   );
+  });
+</script>
